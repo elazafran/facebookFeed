@@ -1,0 +1,32 @@
+{
+  "name": "feed",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.1",
+    "gulp-connect": "^5.5.0",
+    "gulp-sass": "^4.0.1",
+    "gulp-uglify": "^3.0.0",
+    "gulp-util": "^3.0.8",
+    "vinyl-ftp": "^0.6.1"
+  },
+  "dependencies": {
+    "npm": "^5.8.0",
+    "npm-install-all": "^1.1.21"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/elazafran/gulp-sass-js.git"
+  },
+  "bugs": {
+    "url": "https://github.com/elazafran/gulp-sass-js/issues"
+  },
+  "homepage": "https://github.com/elazafran/gulp-sass-js#readme",
+  "description": ""
+}
