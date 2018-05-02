@@ -18,7 +18,8 @@
   },
   "dependencies": {
     "npm": "^5.8.0",
-    "npm-install-all": "^1.1.21"
+    "npm-install-all": "^1.1.21",
+    "update": "^0.7.4"
   },
   "repository": {
     "type": "git",

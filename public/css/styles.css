@@ -13,5 +13,7 @@ img {
   background: #fff;
   border-radius: 6px; }
 
-.indivualComentario .fecha, .indivualComentario .comentarios {
-  margin-bottom: 0px; }
+.indivualComentario {
+  display: block; }
+  .indivualComentario .fecha, .indivualComentario .comentarios {
+    margin-bottom: 0px; }

@@ -154,7 +154,7 @@ gulp.task('watch', function () {
   gulp.watch('./sass/**/*.scss', ['sass']);
   gulp.watch('./js/**/*.js', ['javascript']);
   gulp.watch('./public/**/*', ['livereload']);
-  gulp.watch('./public/**/*', ['deploy']);
+  //gulp.watch('./public/**/*', ['deploy']);
   
 });
 
