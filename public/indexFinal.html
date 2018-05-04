@@ -35,11 +35,11 @@
 
             function leer() {
 
-                setInterval(leer_json_facebook, 10000);
+                setInterval(leer_json_facebook, 20000);
                 leer_json_facebook();
                 var ids = [];
                 var idsComentarios = [];
-                var idcomentario;
+                var idCapaComentario;
                 function leer_json_facebook(tokenfacebook, limitfacebook) {
                     // recogemos el token del input oculto uqe usamos para traernos del backend los datos
                     var tokenfacebook = $('[name=facebooktoken]').val();
@@ -49,16 +49,17 @@
                     let comentarios;
                     $.ajax({
 
-                        url: "https://graph.facebook.com/v2.12/Javier.Aliaga.Rodriguez?fields=feed{created_time,message,description,picture,permalink_url,full_picture,comments.limit(10)}&access_token=EAACEdEose0cBAJG5LhaDvbQ1YvdoI9I2Rpi9ORj6jqqHgEo1AZAX2AKJTK9OrAQsuyLHmxt6fHaYzGoYRSvVZAXcHyJwHqLXuqD5FH1Mj0qnjRol1ASALbckLlRS9wV2C9bHpJkyAjbTLHINF7e2G4HHx9ewMNdZALvieHwF26Q8ZA1bJ86nBSGitKWFUWwZD",
+                        url: "https://graph.facebook.com/v2.12/Javier.Aliaga.Rodriguez?fields=feed{created_time,message,description,picture,permalink_url,full_picture,comments.limit(10)}&access_token=EAACEdEose0cBAHREIqXkQmyc2QacKf0dYREcb6049pLcYl9gm6scKh3b1ICmbFZAVsMX0ZCi5JqsIPqtClIpNBLlkDfv7cQ9K27y3kdyU6iRsU7D7ggZBL8SEUeI36pKgFCCZBXwCaiXuK0eTiTLZAqnY2XUz9pSObXYPZCa130ZBxV656NOvce6ZBxQMuUbhD0ZD",
                         //url: "https://graph.facebook.com/v2.12/"+facebookPage+"?fields=feed{created_time,message,description,picture,permalink_url,full_picture,comments.limit("+limitfacebook+")}&access_token="+tokenfacebook,
                         jsonp: "callback",
                         dataType: "jsonp",
                         success: function (response) {
-                            //console.log("inicial" + response);
+                            var responseGlobal = response;
+                            
                             for (var i = 0; i < response['feed']['data'].length; i++) {
                                 if (!ids.includes(response['feed']['data'][i]['id'])) {
                                     ids.push(response['feed']['data'][i]['id']);
-
+                                    idCapaComentario=response['feed']['data'][i]['id'];
                                     //console.log(ids);
 
                                     //primer evento y se imprimen todos
@@ -69,7 +70,7 @@
 
                                     if (response['feed']['data'][i]['id']) {
                                         ainsertar += "<div class='feed' id='" + response['feed']['data'][i]['id'] + "'>";
-                                        idcomentario=response['feed']['data'][i]['id'];
+                                       
                                     }
                                     if (response['feed']['data'][i]['created_time']) {
                                         var fechaComentario = response['feed']['data'][i]['created_time'];
@@ -92,31 +93,122 @@
                                     if (response['feed']['data'][i]['full_picture']) {
                                         ainsertar += "<img class='img-fluid' src=" + response['feed']['data'][i]['full_picture'] + ">";
                                     }
+                                     //ainsertar+='<hr>';
+                                     if (!pitamosPrepend) {
+                                        jQuery('.facebookLista').prepend(ainsertar);
+                                        pitamosPrepend = true;
+                                    } else {
+                                        jQuery('.facebookLista').append(ainsertar);
+                                    }
                                     //pintamos los comentarios
                                     if (response['feed']['data'][i]['comments']) {
 
                                         //console.log("entro en hay comentarios");
-                                        console.log("id de la capa que hay comentarios =>>"+idcomentario);
-                                        comentario(idcomentario);
+                                        //console.log("id de la capa que hay comentarios =>>"+idcomentario);
+                                        //comentario(idcomentario,responseGlobal);
+                                        //console.log(idcomentario);
+                                        let ainsertar;
+                                        var h=0;
+                                        
+                                        if(response['feed']['data'].length){
+                                            // for (h = 0; h < response['feed']['data'].length; h++) {
+                                                if (response['feed']['data'][i]['comments']){
+                                                    var hay_algo=response['feed']['data'][i]['comments']['data'].length;
+                                                }
+                                                else {
+                                                   // console.log("no exite comments =>"+hay_algo);
+                                                    
+                                                }
+                                                ///console.log("hayalgo =>"+hay_algo);
+
+                                                if(hay_algo){
+                                                    //console.log("hay que pintar los comentarios");
+                                                    //console.log(response);
+                                                    
+                                                    
+                                                    for (var j = 0; j < hay_algo; j++) {
+                                                    
+                                                        if (response.feed.data[i]['comments']){
+                                                            //console.log ("id del bucle"+response['feed']['data'][i]['id'] +"id capa ==SS" +idCapaComentario);
+                                                            if(response['feed']['data'][i]['id'] == idCapaComentario){
+                                                                console.log("dentro del if que existe y es igual");
+                                                                if(!idsComentarios.includes(response['feed']['data'][i]['comments']['data'][j]['id'])){
+                                                                //console.log("HAY COMENTARIOSSSS!!!!!" + idCapaComentario);
+
+                                                                    idsComentarios.push(response['feed']['data'][i]['comments']['data'][j]['id']);
+                                                                    var fecha = response['feed']['data'][i]['comments']['data'][j]['created_time'];
+                                                                    var aux = response['feed']['data'][i]['id'] ;
+                                                                    console.log("-------------metemos en idscomentarios!!!!!!!!!! =>"+aux);
+                                                                    //$('#263647760354133_1903945092991050').append('<div class="divComentario"><div class="indivualComentario"><p class="fecha">'+convertirHora(fecha)+'</p><p class="textoComentario">'+response['feed']['data'][i]['comments']['data'][j]['message']+'</p></div></div>');
+                                                                    $('#'+aux+'').append('<div class="divComentario"><div class="indivualComentario"><p class="fecha">'+convertirHora(fecha)+'</p><p class="textoComentario">'+response['feed']['data'][i]['comments']['data'][j]['message']+'</p></div></div>');
+                                                                    console.log("ssssw");
+                                                                    //$('#263647760354133_1903944102991149').append('<div class="divComentario"><div class="indivualComentario"><p class="fecha">'+convertirHora(fecha)+'</p><p class="textoComentario">'+response['feed']['data'][h]['comments']['data'][j]['message']+'</p></div></div>');
+
+                                                                }
+                                                            }
+                                                        }
+                                                    
+                                                    }
+                                                // }
+                                            }
+                                        }
+                                        //console.log("inicial");
+                                        //console.log(responseGlobal);
 
 
                                     } else {
                                         //console.log("NOOOOOOOOOOOOOOO hay comentarios en este post");
                                     }
 
-                                    //ainsertar+='<hr>';
-                                    if (!pitamosPrepend) {
-                                        jQuery('.facebookLista').prepend(ainsertar);
-                                        pitamosPrepend = true;
-                                    } else {
-                                        jQuery('.facebookLista').append(ainsertar);
-                                    }
+                                   
 
                                 } else {
+                                    // console.log("responseGlobal distinto");
+                                    // console.log(responseGlobal);
+                                    // //comentario(idcomentario,responseGlobal);
 
-                                    comentario(idcomentario);
-                                    console.log("2222 id de la capa que hay comentarios =>>"+idcomentario);
-                                    
+                                    // console.log("2222 id de la capa que hay comentarios =>>"+idcomentario);
+                                    //console.log(idcomentario);
+                                    let ainsertar;
+                                    var h=0;
+                                    if(response['feed']['data'].length){
+                                        
+                                            if (response['feed']['data'][i]['comments'])
+                                                var hay_algo=response['feed']['data'][i]['comments']['data'].length;
+                                            else {
+                                                console.log("no exite comments =>"+hay_algo);
+                                                
+                                            }
+                                            console.log("hayalgo =>"+hay_algo);
+
+                                            if(hay_algo){
+                                                console.log("hay que pintar los comentarios");
+                                                console.log(response);
+                                                
+                                                
+                                                for (var j = 0; j < hay_algo; j++) {
+                                                
+                                                    if (response.feed.data[i]['comments']){
+                                                        console.log ("id del bucle"+response['feed']['data'][i]['id'] +"id capa ==SS" +idCapaComentario);
+                                                        if(response['feed']['data'][i]['id'] == idCapaComentario){
+                                                            console.log("dentro del if");
+                                                            if(!idsComentarios.includes(response['feed']['data'][i]['comments']['data'][j]['id'])){
+
+                                                                idsComentarios.push(response['feed']['data'][i]['comments']['data'][j]['id']);
+                                                                console.log("metemos en idscomentarios =>"+idCapaComentario);
+                                                                var fecha = response['feed']['data'][i]['comments']['data'][j]['created_time'];
+                                                                
+                                                                // $('#'+idCapaComentario+'').append('<div class="divComentario"><div class="indivualComentario"><p class="fecha">'+convertirHora(fecha)+'</p><p class="textoComentario">'+response['feed']['data'][h]['comments']['data'][j]['message']+'</p></div></div>');
+                                                                $('#263647760354133_1903945092991050').append('<div class="divComentario"><div class="indivualComentario"><p class="fecha">'+convertirHora(fecha)+'</p><p class="textoComentario">'+response['feed']['data'][i]['comments']['data'][j]['message']+'</p></div></div>');
+
+                                                            }
+                                                        }
+                                                    }
+                                                
+                                                }
+                                            }
+                                        
+                                    }
                                 }
                             }
 
@@ -125,62 +217,7 @@
                     });//cierre del ajax
                 }// cierre leer_json_facebook()
                 
-                //pintamos los comentarios de la capa pansando un id para poder compar e incluirlo en su capa
-                function comentario(idCapa) {
-
-                    console.log(idCapa);
-                    let ainsertar;
-                    
-                    $.ajax({
-
-                        url: "https://graph.facebook.com/v2.12/Javier.Aliaga.Rodriguez?fields=feed{created_time,message,description,picture,permalink_url,full_picture,comments.limit(10)}&access_token=EAACEdEose0cBAJG5LhaDvbQ1YvdoI9I2Rpi9ORj6jqqHgEo1AZAX2AKJTK9OrAQsuyLHmxt6fHaYzGoYRSvVZAXcHyJwHqLXuqD5FH1Mj0qnjRol1ASALbckLlRS9wV2C9bHpJkyAjbTLHINF7e2G4HHx9ewMNdZALvieHwF26Q8ZA1bJ86nBSGitKWFUWwZD",
-                        //url: "https://graph.facebook.com/v2.12/"+facebookPage+"?fields=feed{created_time,message,description,picture,permalink_url,full_picture,comments.limit("+limitfacebook+")}&access_token="+tokenfacebook,
-                        jsonp: "callback",
-                        dataType: "jsonp",
-                        success: function (response2) {
-                            var h=0;
-                            if(response2['feed']['data'].length){
-                                for (h = 0; h < response2['feed']['data'].length; h++) {
-                                    if (response2['feed']['data'][h]['comments'])
-                                        var hay_algo=response2['feed']['data'][h]['comments']['data'].length;
-                                    else {
-                                        console.log("no exite comments =>"+hay_algo);
-                                        
-                                    }
-                                    console.log("hayalgo =>"+hay_algo);
-
-                                    if(hay_algo){
-                                        console.log("hay que pintar los comentarios");
-                                        console.log(response2);
-                                        
-                                        
-                                        for (var j = 0; j < hay_algo; j++) {
-                                        
-                                            if (response2.feed.data[h]['comments']){
-                                                console.log ("id del bucle"+response2['feed']['data'][h]['id'] +"id capa ==SS" +idCapa);
-                                                if(response2['feed']['data'][h]['id'] == idCapa){
-                                                    console.log("dentro del if");
-                                                    if(!idsComentarios.includes(response2['feed']['data'][h]['comments']['data'][j]['id'])){
-
-                                                        idsComentarios.push(response2['feed']['data'][h]['comments']['data'][j]['id']);
-                                                        console.log("metemos en idscomentarios =>"+idCapa);
-                                                        var fecha = response2['feed']['data'][h]['comments']['data'][j]['created_time'];
-                                                        
-                                                        $('#'+idCapa+'').append('<div class="divComentario"><div class="indivualComentario"><p class="fecha">'+convertirHora(fecha)+'</p><p class="textoComentario">'+response2['feed']['data'][h]['comments']['data'][j]['message']+'</p></div></div>');
-
-                                                    }
-                                                }
-                                            }
-                                        
-                                        }
-                                    }
-                                }
-                            }
-                           
-                        }
-                    });
-
-                }
+               
 
                 function convertirHora(fecha) {
 
