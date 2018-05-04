@@ -1,19 +1,82 @@
 body {
-  background: #555; }
+  background-color: #245c3a; }
 
-h1 {
-  color: #F1F1F1; }
+.feed {
+  background: #b88181; }
 
-img {
-  width: 100%; }
+.redsocial.facebook {
+  background-image: -webkit-linear-gradient(bottom, #555 0%, #fff 100%);
+  background-image: -o-linear-gradient(bottom, #555 0%, #fff 100%);
+  background-image: linear-gradient(to top, #555 0%, #fff 100%);
+  background-color: #e9ebee; }
 
-.facebookLista > div {
+.facebookLista div {
   padding: 6px;
-  margin-bottom: 10px;
-  background: #fff;
-  border-radius: 6px; }
+  background: #fff; }
 
-.indivualComentario {
-  display: block; }
-  .indivualComentario .fecha, .indivualComentario .comentarios {
-    margin-bottom: 0px; }
+.feed {
+  background-color: #fff;
+  overflow: hidden;
+  display: block;
+  border: 1px solid #e5e5e5;
+  border-radius: 3px;
+  margin: 12px;
+  background: #fff;
+  display: block;
+  padding: 12px 12px 8px 12px;
+  margin-bottom: 10px;
+  font-family: sans-serif; }
+  .feed img {
+    width: 100%;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+    position: relative; }
+  .feed .textoPublicacion {
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1.38;
+    word-wrap: break-word; }
+  .feed .fecha {
+    font-size: .85em;
+    color: rgba(45, 127, 221, 0.82);
+    display: inline-block;
+    letter-spacing: -1px;
+    margin-right: 10px; }
+  .feed .divComentario {
+    margin-top: 6px;
+    background: #f2f3f5; }
+    .feed .divComentario .indivualComentario {
+      border-top: 1px solid #e1e2e3;
+      margin-bottom: 0px;
+      background: none;
+      display: block;
+      grid-template-columns: auto auto auto; }
+    .feed .divComentario .indivualComentario:first-child {
+      border-top: none; }
+    .feed .divComentario .fecha {
+      color: #365899;
+      font-size: .8em;
+      font-weight: bold; }
+    .feed .divComentario .textoComentario {
+      background: none;
+      display: inline-block;
+      font-size: .8em; }
+    .feed .divComentario hr {
+      display: none; }
+    .feed .divComentario hr:last-child {
+      display: none; }
+  .feed small {
+    color: #5f5f5f; }
+  .feed span {
+    display: none;
+    color: #000; }
+
+/********* styles scrollbar ***********/
+#contenido::-moz-scrollbar, .redsocial::-moz-scrollbar,
+#contenido::-webkit-scrollbar, .redsocial::-webkit-scrollbar {
+  width: 7px;
+  background: #fff; }
+
+#contenido::-webkit-scrollbar-thumb, .redsocial::-webkit-scrollbar-thumb {
+  background: #000;
+  border-radius: 5px; }

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4"
+        crossorigin="anonymous">
+
+    <script src="https://code.jquery.com/jquery-1.12.4.js" integrity="sha256-Qw82+bXyGq6MydymqBxNPYTaUXXq7c8v3CwiYwLLNXU=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="css/styles.css">
+
+</head>
+
+<body>
+    <script type="text/javascript">
+        
+        let viejosID = [];
+        let viejosIDcomentarios = [];
+        let nuevosID = [];
+        let nuevosIDcomentarios = [];
+
+
+        let resultado = [];
+        let items_a_eliminar = [];
+        let items_a_agregar = [];
+
+        var contador = 0;
+        document.addEventListener("DOMContentLoaded", function (event) {
+
+            leer();
+
+
+            function leer() {
+
+                setInterval(leer_json_facebook, 10000);
+                leer_json_facebook();
+                var ids = [];
+                var idsComentarios = [];
+                var idcomentario;
+                function leer_json_facebook(tokenfacebook, limitfacebook) {
+                    // recogemos el token del input oculto uqe usamos para traernos del backend los datos
+                    var tokenfacebook = $('[name=facebooktoken]').val();
+                    var limitfacebook = $('[name=facebooklimit]').val();
+                    var facebookPage = $('[name=facebookPage]').val();
+                    var pitamosPrepend = false;
+                    let comentarios;
+                    $.ajax({
+
+                        url: "https://graph.facebook.com/v2.12/Javier.Aliaga.Rodriguez?fields=feed{created_time,message,description,picture,permalink_url,full_picture,comments.limit(10)}&access_token=EAACEdEose0cBAJG5LhaDvbQ1YvdoI9I2Rpi9ORj6jqqHgEo1AZAX2AKJTK9OrAQsuyLHmxt6fHaYzGoYRSvVZAXcHyJwHqLXuqD5FH1Mj0qnjRol1ASALbckLlRS9wV2C9bHpJkyAjbTLHINF7e2G4HHx9ewMNdZALvieHwF26Q8ZA1bJ86nBSGitKWFUWwZD",
+                        //url: "https://graph.facebook.com/v2.12/"+facebookPage+"?fields=feed{created_time,message,description,picture,permalink_url,full_picture,comments.limit("+limitfacebook+")}&access_token="+tokenfacebook,
+                        jsonp: "callback",
+                        dataType: "jsonp",
+                        success: function (response) {
+                            //console.log("inicial" + response);
+                            for (var i = 0; i < response['feed']['data'].length; i++) {
+                                if (!ids.includes(response['feed']['data'][i]['id'])) {
+                                    ids.push(response['feed']['data'][i]['id']);
+
+                                    //console.log(ids);
+
+                                    //primer evento y se imprimen todos
+                                    //console.log('esto hay que pintar ' + response);
+
+
+                                    var ainsertar = '';
+
+                                    if (response['feed']['data'][i]['id']) {
+                                        ainsertar += "<div class='feed' id='" + response['feed']['data'][i]['id'] + "'>";
+                                        idcomentario=response['feed']['data'][i]['id'];
+                                    }
+                                    if (response['feed']['data'][i]['created_time']) {
+                                        var fechaComentario = response['feed']['data'][i]['created_time'];
+                                        var dt = new Date(fechaComentario);
+                                        //extraemos el día mes y año
+                                        var dia = dt.getDate();
+                                        var mes = parseInt(dt.getMonth()) + 1;
+                                        var ano = dt.getFullYear();
+                                        var horas = dt.getHours();
+                                        var minutos = dt.getMinutes();
+
+                                        //ainsertar+='<p class="textoPublicacion">'+dt.toLocaleString('es-ES', { hour: 'numeric', minute: 'numeric', hour12: true })+'</p>';
+                                    }
+                                    if (response['feed']['data'][i]['message']) {
+                                        ainsertar += '<p class="textoPublicacion">' + response['feed']['data'][i]['message'] + '</p>';
+                                    }
+                                    if (response['feed']['data'][i]['description']) {
+                                        ainsertar += '<h5>' + response['feed']['data'][i]['description'] + '</h5>';
+                                    }
+                                    if (response['feed']['data'][i]['full_picture']) {
+                                        ainsertar += "<img class='img-fluid' src=" + response['feed']['data'][i]['full_picture'] + ">";
+                                    }
+                                    //pintamos los comentarios
+                                    if (response['feed']['data'][i]['comments']) {
+
+                                        //console.log("entro en hay comentarios");
+                                        console.log("id de la capa que hay comentarios =>>"+idcomentario);
+                                        comentario(idcomentario);
+
+
+                                    } else {
+                                        //console.log("NOOOOOOOOOOOOOOO hay comentarios en este post");
+                                    }
+
+                                    //ainsertar+='<hr>';
+                                    if (!pitamosPrepend) {
+                                        jQuery('.facebookLista').prepend(ainsertar);
+                                        pitamosPrepend = true;
+                                    } else {
+                                        jQuery('.facebookLista').append(ainsertar);
+                                    }
+
+                                } else {
+
+                                    comentario(idcomentario);
+                                    console.log("2222 id de la capa que hay comentarios =>>"+idcomentario);
+                                    
+                                }
+                            }
+
+                        }
+
+                    });//cierre del ajax
+                }// cierre leer_json_facebook()
+                
+                //pintamos los comentarios de la capa pansando un id para poder compar e incluirlo en su capa
+                function comentario(idCapa) {
+
+                    console.log(idCapa);
+                    let ainsertar;
+                    
+                    $.ajax({
+
+                        url: "https://graph.facebook.com/v2.12/Javier.Aliaga.Rodriguez?fields=feed{created_time,message,description,picture,permalink_url,full_picture,comments.limit(10)}&access_token=EAACEdEose0cBAJG5LhaDvbQ1YvdoI9I2Rpi9ORj6jqqHgEo1AZAX2AKJTK9OrAQsuyLHmxt6fHaYzGoYRSvVZAXcHyJwHqLXuqD5FH1Mj0qnjRol1ASALbckLlRS9wV2C9bHpJkyAjbTLHINF7e2G4HHx9ewMNdZALvieHwF26Q8ZA1bJ86nBSGitKWFUWwZD",
+                        //url: "https://graph.facebook.com/v2.12/"+facebookPage+"?fields=feed{created_time,message,description,picture,permalink_url,full_picture,comments.limit("+limitfacebook+")}&access_token="+tokenfacebook,
+                        jsonp: "callback",
+                        dataType: "jsonp",
+                        success: function (response2) {
+                            var h=0;
+                            if(response2['feed']['data'].length){
+                                for (h = 0; h < response2['feed']['data'].length; h++) {
+                                    if (response2['feed']['data'][h]['comments'])
+                                        var hay_algo=response2['feed']['data'][h]['comments']['data'].length;
+                                    else {
+                                        console.log("no exite comments =>"+hay_algo);
+                                        
+                                    }
+                                    console.log("hayalgo =>"+hay_algo);
+
+                                    if(hay_algo){
+                                        console.log("hay que pintar los comentarios");
+                                        console.log(response2);
+                                        
+                                        
+                                        for (var j = 0; j < hay_algo; j++) {
+                                        
+                                            if (response2.feed.data[h]['comments']){
+                                                console.log ("id del bucle"+response2['feed']['data'][h]['id'] +"id capa ==SS" +idCapa);
+                                                if(response2['feed']['data'][h]['id'] == idCapa){
+                                                    console.log("dentro del if");
+                                                    if(!idsComentarios.includes(response2['feed']['data'][h]['comments']['data'][j]['id'])){
+
+                                                        idsComentarios.push(response2['feed']['data'][h]['comments']['data'][j]['id']);
+                                                        console.log("metemos en idscomentarios =>"+idCapa);
+                                                        var fecha = response2['feed']['data'][h]['comments']['data'][j]['created_time'];
+                                                        
+                                                        $('#'+idCapa+'').append('<div class="divComentario"><div class="indivualComentario"><p class="fecha">'+convertirHora(fecha)+'</p><p class="textoComentario">'+response2['feed']['data'][h]['comments']['data'][j]['message']+'</p></div></div>');
+
+                                                    }
+                                                }
+                                            }
+                                        
+                                        }
+                                    }
+                                }
+                            }
+                           
+                        }
+                    });
+
+                }
+
+                function convertirHora(fecha) {
+
+                    var dt = new Date(fecha);
+                    //extraemos el día mes y año
+                    var dia = dt.getDate();
+                    var mes = parseInt(dt.getMonth()) + 1;
+                    var ano = dt.getFullYear();
+                    var horas = dt.getHours();
+                    var minutos = dt.getMinutes();
+
+                    return dt.toLocaleString('es-ES', { hour: 'numeric', minute: 'numeric', hour12: true });
+                }
+
+            }
+        });//cierre document ready
+    </script>
+    <div class="facebookLista">
+
+    </div>
+</body>
+
+</html>

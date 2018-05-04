@@ -16,20 +16,25 @@
 
 <body>
   <script type="text/javascript">
-    var viejosID = [];
-    var nuevoID = [];
+  "use strict";
+    let viejosID = [];
+    let viejosIDcomentarios = [];
+    let nuevosID = [];
+    let nuevosIDcomentarios = [];
 
-    var nuevosID = [];
-    var resultado = [];
-    var items_a_eliminar = [];
-    var items_a_agregar = [];
+    
+    let resultado = [];
+    let items_a_eliminar = [];
+    let items_a_agregar = [];
 
     var contador = 0;
     document.addEventListener("DOMContentLoaded", function (event) {
 
       leer();
-      setInterval(leer, 10000);
+
+
       function leer() {
+        setInterval(leer_json_facebook, 10000);
         leer_json_facebook();
         function leer_json_facebook(tokenfacebook, limitfacebook) {
           // recogemos el token del input oculto uqe usamos para traernos del backend los datos
@@ -39,188 +44,348 @@
           //console.log('facebookPage =>>'+facebookPage);
           $.ajax({
 
-            url: "https://graph.facebook.com/v2.12/Javier.Aliaga.Rodriguez?fields=feed{created_time,message,description,picture,permalink_url,full_picture,comments.limit(10)}&access_token=EAACEdEose0cBADZBI1AMP460clK8wLMgGahqxhmL07jMZCJIz30qwJ5VMNK3ZCES9uEwDaR0k46qOvjLKvpAh9JlH2rlDB73jzMXL8gZC0konvnO0zsjZBLZCyrTUihdl5OZBoGL2ZCo7orjPUZBQqkYClZBwPDPWsTdeVc1VK4qkjCZA6ZCnG9ZC7tzCZAmXr8iyFpSgZD",
+            url: "https://graph.facebook.com/v2.12/Javier.Aliaga.Rodriguez?fields=feed{created_time,message,description,picture,permalink_url,full_picture,comments.limit(10)}&access_token=EAACEdEose0cBAHZAVdGQ44wCnE5hRzkS81ZBXKwZBZCxCICV2K7g0ZCHS5pQ1K1SoTUiBKwHaNQ1ihZBw5ZAZAIJa1AqLBZAWCEZASgOaCTJiBA9duwnDC0DAcAmjaolGHtIR524XrGB7ZAITMRUyfGqxvxFUJbKlVv3Q25lNcEmNxeZByg5DwGTCo5uFJTdHFBNWgsZD",
             //url: "https://graph.facebook.com/v2.12/"+facebookPage+"?fields=feed{created_time,message,description,picture,permalink_url,full_picture,comments.limit("+limitfacebook+")}&access_token="+tokenfacebook,
             jsonp: "callback",
             dataType: "jsonp",
             success: function (response) {
-              respuestaAJAX(response);
               console.log(response);
+              //console.log(globalResponse);
+              respuestaAJAX(response);
             }
           });//cierre del ajax
         }// cierre leer_json_facebook()
+
         function respuestaAJAX(response) {
-          // variable para saber si pintar
-          var volverApintar;
+          // variable para saber si pintar todo el DOM
+          let volverApintar;
+
           // recorremos el json y guardamos los id
-          if (1 > viejosID.length) {
-            //console.log("rellenamos");
+          if ( viejosID.length < 1) {
+            //console.log("rellenamos viejos vacío");
             for (var i = 0; i < response['feed']['data'].length; i++) {
               viejosID.push(response['feed']['data'][i]['id']);
             }
-          } else {
-            // borramos el array
-            while (nuevosID.length) {
-              nuevosID.pop();
-            }
-            // rellenamos el array de nuevos para poder comparar
-            for (var i = 0; i < response['feed']['data'].length; i++) {
-              nuevosID.push(response['feed']['data'][i]['id']);
+            volverApintar = false;
 
-            }
-            // guardamos el return de la funcion para tomar la decisión
-            volverApintar = comparar();
-          }
-          //console.log("volverApintar "+volverApintar);
-          if (!volverApintar)
+          } else {
+            console.log("segunda vuelta");
+              // borramos el array
+              while (nuevosID.length) {
+                nuevosID.pop();
+              }
+              // rellenamos el array de nuevos para poder comparar
+              for (var i = 0; i < response['feed']['data'].length; i++) {
+                
+                nuevosID.push(response['feed']['data'][i]['id']);
+
+              }
+              // guardamos el return de la funcion para tomar la decisión
+              // volverApintar = comparar(response);
+              volverApintar = true;
+              //console.log("valor de volverApintar =>" + volverApintar);
+              
+          } 
+                
+          
+          for (var i = 0; i<viejosID.length;i++ ){
+            
+                console.log(nuevosID[i]);
+                if (!viejosID.includes(nuevosID[i])) {
+                  // añadimos al principio
+                   viejosID.pop();
+                   viejosID.unshift(nuevosID[i]);
+
+                  //console.log("pintamos =>> "+ nuevosID[i]);
+
+                }
+              }
+          //console.log("volverApintar "+ volverApintar)    
+          
+          if (!volverApintar){
             pintar(response);
+          } else {
+              //console.log("parametros que les pasamos" + items_a_eliminar +" ---- " + response);
+             
+              console.log("son iguales de tamaño = " + volverApintar);
+              //agregarVariosElementosArray(items_a_eliminar,response);
+          }
+
 
         }// cierre respuestaAJAX()
-        function comparar() {
-          //limpiamos array
-          while (items_a_eliminar.length) {
-            items_a_eliminar.pop();
-          }
-          while (items_a_agregar.length) {
-            items_a_agregar.pop();
-          }
 
-          if (viejosID.length == nuevosID.length) {
-            $.each(viejosID, function (i, val) {
-              if ($.inArray(val, nuevosID) < 0) {
-                contador++;
-                items_a_eliminar.push(val);
-              }
-            });
-            //si la longuitud es distinta
-          } else if (viejosID.length > nuevosID.length) {
+        // function comparar(response) {
+        //     //limpiamos los array
+        //     while (items_a_eliminar.length) {
+        //       items_a_eliminar.pop();
+        //     }
+        //     while (items_a_agregar.length) {
+        //       items_a_agregar.pop();
+        //     }
 
-            console.log("viejos es mayor que los nuevos, hay uqe actulizar los viejos");
-            while (items_a_eliminar.length) {
-              items_a_eliminar.pop();
-            }
-            
-            $.each(viejosID, function (i, val) {
-              if ($.inArray(val,nuevoID) < 0) {
-                contador++;
-                console.log("valor Viejo "+val);
-                items_a_eliminar.push(val);
-                //console.info( viejosID.includes( val ) ); // true
-                var valor = viejosID.indexOf(val);
-                viejosID.slice(valor, 1);
-                //viejosID.pop();
-                console.log();
+        //     if (viejosID.length == nuevosID.length) {
+           
+        //       console.log("son iguales de tamaño, compararmos los IDs" );
+        //       console.log(viejosID);
+        //       $.each(nuevosID, function (i, val) {
+        //         console.log("comparacion da como resultado" + $.inArray(val,viejosID));
 
+        //         // si es -1 guardamos dicho valor
+        //         if ($.inArray(val,viejosID) < 0) {
+                  
+        //           var indice = viejosID.indexOf(i); // obtenemos el indice
 
-                console.log("valor =>> " + valor);
-              }
-            });
-            console.log("antes "+items_a_eliminar + "viejosID.length " + viejosID.length + "nuevosID.length"+ nuevosID.length);
-            borrarVariorsElementosArray(items_a_eliminar);
-            console.log("después "+items_a_eliminar + "viejosID.length " + viejosID.length + "nuevosID.length"+ nuevosID.length);
-          }
-          else if (viejosID.length < nuevosID.length) {
+        //           console.log( "valor del indice= " + indice + "; valor de i " + i +" ----;"+viejosID[i]+" esto es el que borramos");
+        //           //eliminamos del DOM
+        //           console.log("nuevo valor!!!! =>>>>>>> "+val);
+                  
+        //           //$('#' + val).remove();
+        //           //contador++;
+        //           //console.log("valor de val y metemos en items_a_eliminar =>" + val);
+        //           items_a_eliminar.push(val);
+                  
+        //           viejosID.splice(indice, 1); // 1 es la cantidad de elemento a eliminar
+        //           //eliminamos 263647760354133_299280040124238
+        //           // agregamos 263647760354133_264192923632950
+        //           viejosID.unshift(val)
+                  
 
-            console.log("NUEVOS es mayor que los VIEJOS, hay uqe actulizar los viejos");
+                  
+        //         }else {
+        //          //   console.log("Este tenemos que agregar a los viejosID!!!!  =>" + val);
+                    
+        //         }
+        //       });
+              
 
-            $.each(nuevosID, function (i, val) {
-              if ($.inArray(val, viejosID) < 0) {
-                items_a_agregar.push(val);
-                console.log("¡¡¡diferencias!!! =>" + val)
-                var valor = viejosID.indexOf(val);
-                viejosID.slice(valor);
-                console.log("valor O=>> " + valor);
-              }
-            });
-            agregarVariosElementosArray(items_a_agregar);
-          }
-          else {
-            console.log("no hacemos nada");
-            // $.each(nuevosID, function (i, val) {
-            //   if ($.inArray(val, viejosID) < 0) {
-            //     items_a_agregar.push(val);
-            //     console.log("¡¡¡diferencias!!! =>" + val)
-            //   }
-            // });
-            // agregarVariosElementosArray(items_a_agregar);
-          }// cierre de Else si es distinto el tamaño
-          //console.log("ID´s a eliminar \n"+items_a_eliminar);
-          //borrarVariorsElementosArray(items_a_eliminar);
-          //console.log(resultado);
-
-          if (0 == items_a_eliminar.length)
-            resultado = true;
-          else
-            resultado = false;
-
-          console.log("resultado==> " + resultado)
-          return resultado;
-
-        }//cierre comparar()
+              
+        //       console.log("hemos modificado los IDs" );
+        //       console.log(viejosID);
+              
+        //       console.log("items_a_eliminar => "+items_a_eliminar.length);
+        //       var vueltas=0;
+        //       // items_a_eliminar.forEach(function (elemento, index) {
+        //       //   vueltas++;
+        //       //   console.log("añadimos al principio del viejosID =>>" + nuevosID[index]);
+        //       //   console.log("borramos al final del viejosID =>>" + items_a_eliminar[index]);
 
 
-        function agregarVariosElementosArray(items_a_agregar) {
-          console.log('TENEMOS que añadir \n' + items_a_agregar);
-          console.log("dentro de agregar " + responseGlobal['feed'].length);
+        //       //   viejosID.unshift(nuevosID[index]);
+        //       //   viejosID.pop(items_a_eliminar[index]);
 
-          for (var i = 0; i < items_a_agregar.length; i++) {
-            //response['items'][i]['object']['id']
-            //console.log("Antoñito =>>" + Object.keys(responseGlobal.items).length);
-            for (let j = 0; j < responseGlobal['feed'].length; j++) {
-              const element = responseGlobal['feed'][j]['id'];
+        //       //   for (var i = 0; i < response['feed']['data'].length; i++) {
 
-              console.log("¡¡¡ELEMENT!!! " + element);
-              if (element != 'undefined' && element == items_a_agregar[i]) {
-                console.log("¡¡¡verdadero!!!");
+        //       //     var ainsertar = '';
 
-                var ainsertar = '';
-                ainsertar += "<div class='feed' id='" + responseGlobal['items'][j]['id'] + "'>";
-                ainsertar += "<p class='textoPublicacion'> " + responseGlobal['items'][i]['object']['content'] + "</p>";
-                ainsertar += "<img class='img-responsive' src='" + responseGlobal['items'][i]['object']['attachments'][0]['image']['url'] + "'/>";
-                //console.log(ainsertar);
-                ainsertar += '</div>';
-                jQuery('.googlepluslista').prepend(ainsertar);
-                viejosID.unshift(responseGlobal['items'][j]['id']);
+        //       //     if (response['feed']['data'][i]['id'] == nuevosID[index]) {
+        //       //       ainsertar += "<div class='feed' id='" + response['feed']['data'][i]['id'] + "'>";
+        //       //     // alert("son iguales entramos en el bucle " + response['feed']['data'][i]['id'] + "es igual a : " + nuevosID[index]);
 
-              }
-            }
-          }
-        }//cierre borrarVariosElementosArray()
+        //       //       if (response['feed']['data'][i]['created_time']) {
+        //       //         var fechaComentario = response['feed']['data'][i]['created_time'];
+        //       //         var dt = new Date(fechaComentario);
+        //       //         //extraemos el día mes y año
+        //       //         var dia = dt.getDate();
+        //       //         var mes = parseInt(dt.getMonth()) + 1;
+        //       //         var ano = dt.getFullYear();
+        //       //         var horas = dt.getHours();
+        //       //         var minutos = dt.getMinutes();
+
+        //       //         //ainsertar+='<p class="textoPublicacion">'+dt.toLocaleString('es-ES', { hour: 'numeric', minute: 'numeric', hour12: true })+'</p>';
+        //       //       }
+        //       //       if (response['feed']['data'][i]['message']) {
+        //       //         ainsertar += '<p class="textoPublicacion">' + response['feed']['data'][i]['message'] + '</p>';
+        //       //       }
+        //       //       if (response['feed']['data'][i]['description']) {
+        //       //         ainsertar += '<h5>' + response['feed']['data'][i]['description'] + '</h5>';
+        //       //       }
+        //       //       if (response['feed']['data'][i]['full_picture']) {
+        //       //         ainsertar += "<img class='img-fluid' src=" + response['feed']['data'][i]['full_picture'] + ">";
+        //       //       }
+        //       //       if (response['feed']['data'][i]['comments']) {
+
+        //       //         comentarios = response['feed']['data'][i]['comments']['data'].length;
+
+        //       //         var listarComentarios = '<div class="divComentario">';
+
+        //       //         for (var k = 0; k < comentarios; k++) {
+
+        //       //           var fechaComentario = response['feed']['data'][i]['comments']['data'][k]['created_time'];
+        //       //           var dt = new Date(fechaComentario);
+        //       //           //extraemos el día mes y año
+        //       //           var dia = dt.getDate();
+        //       //           var mes = parseInt(dt.getMonth()) + 1;
+        //       //           var ano = dt.getFullYear();
+        //       //           var horas = dt.getHours();
+        //       //           var minutos = dt.getMinutes();
+        //       //           //escribimos la fecha en un formato legible
+        //       //           listarComentarios += '<div class="indivualComentario"><p class="fecha">' + dt.toLocaleString('es-ES', { hour: 'numeric', minute: 'numeric', hour12: true }) + '</p><p class="textoComentario">' + response['feed']['data'][i]['comments']['data'][k]['message'] + '</p></div>';
+
+        //       //           // comentarios anidados
+        //       //           if (response['feed']['data'][i]['comments']) {
+        //       //             for (var j = 0; j < comentarios; j++) {
+
+        //       //             }
+        //       //           } // fin de comentarios anidados
+        //       //         }
+        //       //         ainsertar += listarComentarios + '</div>';
+
+        //       //       } else {
+        //       //         //console.log("NOOOOOOOOOOOOOOO hay comentarios en este post");
+        //       //       }
+
+
+        //       //       //ainsertar+='<hr>';
+        //       //       jQuery('.facebookLista').prepend(ainsertar);
+        //       //     }
+        //       //   }
+        //       //   $(".facebookLista").prepend(ainsertar);
+        //       //   console.log("===>>>>>> "+ index);
+                
+              
+        //       // });
+        //       while (items_a_eliminar.length) {
+        //         vueltas++;
+        //         items_a_eliminar.pop();
+        //       }
+        //       console.log("vueltas"+vueltas);
+        //     // console.log("viejos " + viejosID + "\n nuevos id " + nuevosID + " \n son: " + (viejosID == nuevosID));
+        //       borrarVariosElementosArray(items_a_eliminar);
+              
+
+
+
+
+        //       resultado = false;
+
+        //       //si la longuitud es distinta
+        //     } else if (viejosID.length > nuevosID.length) {
+
+        //       console.log("viejos es mayor que los nuevos, hay uqe actulizar los viejos");
+        //       while (items_a_eliminar.length) {
+        //         items_a_eliminar.pop();
+        //       }
+
+        //       $.each(viejosID, function (i, val) {
+        //         if ($.inArray(val, nuevosID) < 0) {
+        //           contador++;
+        //           console.log("valor Viejo " + val);
+        //           items_a_eliminar.push(val);
+        //           //console.info( viejosID.includes( val ) ); // true
+        //           var valor = viejosID.indexOf(val);
+        //           viejosID.slice(valor, 1);
+        //           //viejosID.pop();
+        //           console.log("valor =>> " + valor);
+        //         }
+        //       });
+        //       $.each(nuevosID, function (i, val) {
+        //         if ($.inArray(val, nuevosID) < 0) {
+        //           contador++;
+        //           console.log("valor Viejo " + val);
+        //           items_a_eliminar.push(val);
+        //           //console.info( viejosID.includes( val ) ); // true
+        //           var valor = viejosID.indexOf(val);
+        //           viejosID.slice(valor, 1);
+        //           //viejosID.pop();
+        //           console.log("valor =>> " + valor);
+        //         }
+        //       });
+
+        //       console.log("antes " + items_a_eliminar + "viejosID.length " + viejosID.length + "nuevosID.length" + nuevosID.length);
+        //       borrarVariosElementosArray(items_a_eliminar);
+        //       console.log("después " + items_a_eliminar + "viejosID.length " + viejosID.length + "nuevosID.length" + nuevosID.length);
+        //     }
+        //     else if (viejosID.length < nuevosID.length) {
+
+        //       console.log("NUEVOS es mayor que los VIEJOS, hay uqe actulizar los viejos");
+
+        //       // $.each(nuevosID, function (i, val) {
+        //       //   if ($.inArray(val, viejosID) < 0) {
+        //       //     items_a_agregar.push(val);
+        //       //     console.log("¡¡¡diferencias!!! =>" + val)
+        //       //     var valor = viejosID.indexOf(val);
+        //       //     viejosID.slice(valor);
+        //       //     console.log("valor O=>> " + valor);
+        //       //   }
+        //       // });
+        //       //agregarVariosElementosArray(items_a_agregar);
+        //     }
+        //     else {
+        //       console.log("no hacemos nada");
+
+        //     }// cierre de Else si es distinto el tamaño
+
+
+        //   // if (0 == items_a_eliminar.length)
+        //   //   resultado = true;
+        //   // else
+        //   //   resultado = false;
+
+        //   console.log("resultado==> " + resultado)
+        //   return resultado;
+
+        // }//cierre comparar()
+
+
+        // function agregarVariosElementosArray(items_a_agregar, response) {
+        //   console.log('TENEMOS que añadir \n' + items_a_agregar);
+        //   console.log("dentro de agregar " + items_a_agregar.length);
+
+        //   for (var i = 0; i < items_a_agregar.length; i++) {
+        //     //response['items'][i]['object']['id']
+        //     //console.log("Antoñito =>>" + Object.keys(responseGlobal.items).length);
+        //     console.log("response['feed']['data'].length;=> "+response['feed']['data'].length);
+        //     for (var j = 0; j < response['feed']['data'].length; j++) {
+        //       const element = response['feed']['data'][j]['id'];
+
+        //       console.log("¡¡¡ELEMENT!!! " + element);
+        //       if (element != 'undefined' && element == items_a_agregar[i]) {
+        //         console.log("¡¡¡verdadero!!!");
+
+        //         var ainsertar = '';
+        //         ainsertar += "<div class='feed' id='" + response['items']['data'][j]['id'] + "'>";
+        //         ainsertar += "<p class='textoPublicacion'> " + response['items']['data'][i]['object']['content'] + "</p>";
+        //         ainsertar += "<img class='img-responsive' src='" + response['items']['data'][i]['object']['attachments'][0]['image']['url'] + "'/>";
+        //         //console.log(ainsertar);
+        //         ainsertar += '</div>';
+        //         jQuery('.googlepluslista').prepend(ainsertar);
+        //         viejosID.unshift(response['items']['data'][j]['id']);
+
+        //       }
+        //     }
+        //   }
+        // }//cierre borrarVariosElementosArray()
         //la mejor manera para realizar un borrado múltiple de un Array debe ser de esta maner
         // eliminamos desde el final
-        function borrarVariorsElementosArray(items_a_eliminar) {
-          for (var i = 0; i < items_a_eliminar.length; i++) {
-            console.log('borramos \n' + items_a_eliminar[i]);
-            $('#' + items_a_eliminar[i]).remove();
+        // function borrarVariosElementosArray(items_a_eliminar) {
+        //   for (var i = 0; i < items_a_eliminar.length; i++) {
+            
+        //     $('#' + items_a_eliminar[i]).remove();
+        //   }
+          
+        //   while (items_a_eliminar.length) {
+        //     items_a_eliminar.pop();
+        //   }
+         
 
-          }
-          if (0 < items_a_eliminar.length){
-            anadirNuevos();
-
-          }
-          while(items_a_eliminar.length){
-            items_a_eliminar.pop();
-          }
-          console.log(items_a_eliminar);
-
-
-        }//cierre borrarVariorsElementosArray()
+        // }//cierre borrarVariosElementosArray()
 
         // añadimos los nuevos
         function anadirNuevos() {
           //recorrremos cuantos haya que eliminar y añadimos del array nuevosID JSON
-          //console.log("para borrar=> "+items_a_eliminar);
-          //console.log("estos son los viejos "+viejosID);
           items_a_eliminar.forEach(function (elemento, index) {
-            viejosID.unshift(nuevosID[index]);
+            
+            //eliminamos del final
             viejosID.pop(items_a_eliminar[index]);
+            //añadimos al principio del array
+            viejosID.unshift(nuevosID[index]);
           });
         }// cierre anadirNuevos()
         function pintar(response) {
           if (nuevosID.length == 0) {
             //primer evento y se imprimen todos
             //console.log('esto hay que pintar ' + response);
-
+            let comentarios;
             for (var i = 0; i < response['feed']['data'].length; i++) {
               var ainsertar = '';
 
@@ -265,7 +430,7 @@
                   var horas = dt.getHours();
                   var minutos = dt.getMinutes();
                   //escribimos la fecha en un formato legible
-                  listarComentarios += '<div class="indivualComentario"><p class="fecha">' + dt.toLocaleString('es-ES', { hour: 'numeric', minute: 'numeric', hour12: true }) + '</p><p class="textoComentario">' + response['feed']['data'][i]['comments']['data'][k]['message'] + '</p></div><hr/>';
+                  listarComentarios += '<div class="indivualComentario"><p class="fecha">' + dt.toLocaleString('es-ES', { hour: 'numeric', minute: 'numeric', hour12: true }) + '</p><p class="textoComentario">' + response['feed']['data'][i]['comments']['data'][k]['message'] + '</p></div>';
 
                   // comentarios anidados
                   if (response['feed']['data'][i]['comments']) {
